@@ -1,3 +1,4 @@
+#include <DFPlayer_Mini_Mp3.h>
 #include <ESP8266WiFi.h>
 
 #ifndef STASSID
@@ -16,9 +17,15 @@ const uint16_t port = 17;
 #define SoundTx Tx
 #define Person 1
 #define LED 2
+//mp3_num : 실행할 mp3 번호
+//mp3_max : mp3 파일의 갯수
+int mp3_num = 1;
+int mp3_max = 5;
 
 void setup() {
   Serial.begin(9600);
+  mp3_set_serial(Serial);
+  mp3_set_volume(30);
 
   //인터넷과의 연결시도
   Serial.println();
@@ -90,8 +97,18 @@ void loop() {
   Serial.println("closing connection");
   client.stop();
 
+  //PIR sensor
+  int PIR = digitalRead(Person);
+  if(PIR){
+    mp3_play(mp3_num);
+    mp3_num++;
+    if(mp3_num > mp3_max){
+      mp3_num = 1;
+    }
+  }
+
   if (wait) {
-    delay(300000);
+    delay(30000);
   }
   wait = true;
 }
