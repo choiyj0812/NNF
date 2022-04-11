@@ -17,8 +17,8 @@ const uint16_t port = 17;
 #define SoundTx Tx
 #define Person 1
 #define LED 2
-//mp3_num : 실행할 mp3 번호
-//mp3_max : mp3 파일의 갯수
+//mp3_num : Number of MP3 files to run
+//mp3_max : Number of MP3 files
 int mp3_num = 1;
 int mp3_max = 5;
 
@@ -27,7 +27,7 @@ void setup() {
   mp3_set_serial(Serial);
   mp3_set_volume(30);
 
-  //인터넷과의 연결시도
+  //Attempt to connect to the Internet
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -36,13 +36,13 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  //연결 실패 시 무한 시도
+  //If the connection fails, an infinite number of attempts
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
 
-  //연결 성공 시 IP주소 출력
+  //If the connection fails, keep trying to connect
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.print("IP address : ");
@@ -57,7 +57,7 @@ void loop() {
   Serial.print(" : ");
   Serial.println(port);
 
-  //클라이언트로 서버와 연결 시도
+  //Attempt to connect with the server
   WiFiClient client;
   if (!client.connect(host, port)) {
     Serial.println("connection failed");
@@ -65,13 +65,13 @@ void loop() {
     return;
   }
 
-  //연결 성공 시 데이터 전송
+  //Send test data if connection is successful
   Serial.println("sending data to server");
   if (client.connected()) {
     client.println("hello from ESP8266");
   }
 
-  //받은 데이터가 없으면 대기 후 연결 해제
+  //Wait for a certain amount of time before disconnecting if no more data is received
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
@@ -82,7 +82,7 @@ void loop() {
     }
   }
 
-  //서버로부터 데이터를 받음
+  //Received data from server
   Serial.println("receiving from remote server");
   String Data_String = "";
   int Data_Int = 0;
