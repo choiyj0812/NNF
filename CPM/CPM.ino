@@ -16,7 +16,8 @@ const uint16_t port = 17;
 #define SoundRx Rx
 #define SoundTx Tx
 #define Person 1
-#define LED 2
+#define LED1 2
+#define LED1 3
 //mp3_num : Number of MP3 files to run
 //mp3_max : Number of MP3 files
 int mp3_num = 1;
@@ -68,16 +69,16 @@ void loop() {
   //Send test data if connection is successful
   Serial.println("sending data to server");
   if (client.connected()) {
-    client.println("hello from ESP8266");
+    client.println("connect frome CPM");
   }
 
-  //Wait for a certain amount of time before disconnecting if no more data is received
+  //wait for data to be available
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
       Serial.println(">>> Client Timeout !");
       client.stop();
-      delay(60000);
+      delay(6000);
       return;
     }
   }
@@ -85,13 +86,20 @@ void loop() {
   //Received data from server
   Serial.println("receiving from remote server");
   String Data_String = "";
-  int Data_Int = 0;
   while (client.available()) {
     char ch = static_cast<char>(client.read());
     Data += ch;
   }
-  Data_Int = Data_String.toInt();
   Serial.println(Data_String);
+
+  if(Data_String == "ON"){
+    digitalWrite(LED1, HIGH);
+    digitalWrite(LED2, HIGH);
+  }
+  else if(Data_String == "OFF"){
+    digitalWrite(LED1, LOW);
+    digitalWrite(LED2, LOW);
+  }
   
   Serial.println();
   Serial.println("closing connection");
