@@ -10,7 +10,7 @@
 const char* ssid = STASSID;
 const char* password = STAPSWD;
 
-const char* host = "link";
+const char* host = "host's address";
 const uint16_t port = 17;
 
 #define SoundRx Rx
@@ -25,6 +25,7 @@ void setup() {
   Serial.begin(9600);
   mp3_set_serial(Serial);
   mp3_set_volume(30);
+  delay(60000);
 
   Serial.println();
   Serial.println();
@@ -61,15 +62,10 @@ void loop() {
     return;
   }
 
-  Serial.println("sending data to server");
-  if (client.connected()) {
-    client.println("test text from CPM");
-  }
-
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
-      Serial.println(">>> Client Timeout !");
+      Serial.println("WiFi connecting clear");
       client.stop();
       delay(60000);
       return;
