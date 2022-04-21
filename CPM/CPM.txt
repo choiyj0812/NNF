@@ -1,6 +1,0 @@
-Arduino Board
-- Lolin D1 mini
-MP3 Library
-- https://deneb21.tistory.com/418
-
-Install CH340 or CH341 Driver!
