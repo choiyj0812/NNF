@@ -1,3 +1,4 @@
+//This code is the thing for CPM(Compliment to Plants Module)
 #include <DFPlayer_Mini_Mp3.h>
 #include <ESP8266WiFi.h>
 
@@ -12,14 +13,11 @@ const char* password = STAPSWD;
 const char* host = "link";
 const uint16_t port = 17;
 
-//SoundRx - MP3Tx, SoundTx - MP3Rx
 #define SoundRx Rx
 #define SoundTx Tx
 #define Person 1
 #define LED1 2
-#define LED1 3
-//mp3_num : Number of MP3 files to run
-//mp3_max : Number of MP3 files
+#define LED2 3
 int mp3_num = 1;
 int mp3_max = 5;
 
@@ -28,7 +26,6 @@ void setup() {
   mp3_set_serial(Serial);
   mp3_set_volume(30);
 
-  //Attempt to connect to the Internet
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -37,13 +34,11 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  //If the connection fails, an infinite number of attempts
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
 
-  //If the connection fails, keep trying to connect
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.print("IP address : ");
@@ -52,13 +47,13 @@ void setup() {
 
 void loop() {
   static bool wait = false;
+  static bool Mode = false;
 
   Serial.print("connecting to ");
   Serial.print(host);
   Serial.print(" : ");
   Serial.println(port);
 
-  //Attempt to connect with the server
   WiFiClient client;
   if (!client.connect(host, port)) {
     Serial.println("connection failed");
@@ -66,37 +61,34 @@ void loop() {
     return;
   }
 
-  //Send test data if connection is successful
   Serial.println("sending data to server");
   if (client.connected()) {
-    client.println("connect frome CPM");
+    client.println("test text from CPM");
   }
 
-  //wait for data to be available
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
       Serial.println(">>> Client Timeout !");
       client.stop();
-      delay(6000);
+      delay(60000);
       return;
     }
   }
 
-  //Received data from server
-  Serial.println("receiving from remote server");
-  String Data_String = "";
+  String Data = "";
   while (client.available()) {
     char ch = static_cast<char>(client.read());
     Data += ch;
   }
-  Serial.println(Data_String);
+  Serial.println(Data);
 
-  if(Data_String == "ON"){
+  if(Data == "ON") Mode = true;
+  else if(Data == "OFF") Mode = false;
+  if(Mode){
     digitalWrite(LED1, HIGH);
     digitalWrite(LED2, HIGH);
-  }
-  else if(Data_String == "OFF"){
+  } else{
     digitalWrite(LED1, LOW);
     digitalWrite(LED2, LOW);
   }
@@ -105,7 +97,6 @@ void loop() {
   Serial.println("closing connection");
   client.stop();
 
-  //PIR sensor
   int PIR = digitalRead(Person);
   if(PIR){
     mp3_play(mp3_num);
@@ -116,7 +107,7 @@ void loop() {
   }
 
   if (wait) {
-    delay(30000);
+    delay(300000);  //delay 5 minutes
   }
   wait = true;
 }
