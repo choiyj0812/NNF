@@ -19,6 +19,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(Motor_1, OUTPUT);
   pinMode(Motor_2, OUTPUT);
+  delay(30000);
 
   Serial.println();
   Serial.println();
@@ -53,11 +54,6 @@ void loop() {
     Serial.println("connection failed");
     delay(5000);
     return;
-  }
-
-  Serial.println("sending data to server");
-  if (client.connected()) {
-    client.println("test text from WPM");
   }
 
   unsigned long timeout = millis();
