@@ -1,94 +1,91 @@
-//This code is the thing for WPM(Water Plants Module)
+#include <Arduino.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 
-#ifndef STASSID
-#define STASSID "WiFi's name"
-#define STAPSK  "WiFi's password"
-#endif
-
-const char* ssid = STASSID;
-const char* password = STAPSK;
-
-const char* host = "host's address";
-const uint16_t port = 17;
+#define ssid "SSID"
+#define pswd "password"
 
 #define Motor_1 7
 #define Motor_2 8
 
+ESP8266WiFiMulti WiFiMulti;
+
 void setup() {
-  Serial.begin(9600);
   pinMode(Motor_1, OUTPUT);
   pinMode(Motor_2, OUTPUT);
-  delay(30000);
+  digitalWrite(Motor_1, LOW);
+  digitalWrite(Motor_2, LOW);
+
+  Serial.begin(115200);
+  // Serial.setDebugOutput(true);
 
   Serial.println();
   Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println();
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  for (uint8_t t = 4; t > 0; t--) {
+    Serial.printf("[SETUP] WAIT %d...\n", t);
+    Serial.flush();
+    delay(1000);
   }
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  WiFi.mode(WIFI_STA);
+  WiFiMulti.addAP(ssid, pswd);
+
 }
 
 void loop() {
-  static bool wait = false;
-  static bool Mode = false;
+  String payload = "";
+  bool Mode = false;
+  
+  // wait for WiFi connection
+  if ((WiFiMulti.run() == WL_CONNECTED)) {
 
-  Serial.print("connecting to ");
-  Serial.print(host);
-  Serial.print(" : ");
-  Serial.println(port);
+    WiFiClient client;
 
-  WiFiClient client;
-  if (!client.connect(host, port)) {
-    Serial.println("connection failed");
-    delay(5000);
-    return;
-  }
+    HTTPClient http;
 
-  unsigned long timeout = millis();
-  while (client.available() == 0) {
-    if (millis() - timeout > 5000) {
-      Serial.println("WiFi connecting clear");
-      client.stop();
-      delay(60000);
-      return;
+    Serial.print("[HTTP] begin...\n");
+    if (http.begin(client, "http://jigsaw.w3.org/HTTP/connection.html")) {  // HTTP
+
+
+      Serial.print("[HTTP] GET...\n");
+      // start connection and send HTTP header
+      int httpCode = http.GET();
+
+      // httpCode will be negative on error
+      if (httpCode > 0) {
+        // HTTP header has been send and Server response header has been handled
+        Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+
+        // file found at server
+        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+          payload = http.getString();
+          Serial.println(payload);
+        }
+      } else {
+        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+      }
+
+      http.end();
+    } else {
+      Serial.printf("[HTTP} Unable to connect\n");
     }
   }
 
-  String command = "";
-  while (client.available()) {
-    char ch = static_cast<char>(client.read());
-    command += ch;
-  }
-  Serial.println(command);
+  if(payload == "ON") Mode = true;
+  else if(payload == "OFF") Mode = false;
 
-  if(command == "ON") Mode = true;
-  else if(command == "OFF") Mode = false;
   if(Mode){
     digitalWrite(Motor_1, HIGH);
     digitalWrite(Motor_2, LOW);
-  } else{
+  }
+  else{
     digitalWrite(Motor_1, LOW);
     digitalWrite(Motor_2, LOW);
   }
 
-  Serial.println();
-  Serial.println("closing connection");
-  client.stop();
-
-  if (wait) {
-    delay(300000); //delay 5 minutes
-  }
-  wait = true;
+  delay(10000);
 }
