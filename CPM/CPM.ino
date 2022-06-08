@@ -5,8 +5,8 @@
 #include <WiFiClient.h>
 #include <DFPlayer_Mini_Mp3.h>
 
-#define ssid "user"
-#define pswd "00000000"
+#define ssid "ssid"
+#define pswd "password"
 
 #define SoundRx Rx
 #define SoundTx Tx
@@ -43,6 +43,7 @@ void setup() {
 }
 
 void loop() {
+  String payload = "";
   static bool Mode = false;
   
   // wait for WiFi connection
@@ -74,7 +75,7 @@ void loop() {
         // 서버에서 파일을 찾음
         if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
           // 문자열을 받아옴
-          String payload = http.getString();
+          payload = http.getString();
           Serial.println(payload);
         }
       }
